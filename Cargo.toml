@@ -6,7 +6,6 @@ publish = false
 [features]
 default = []
 metal = ["gfx-backend-metal"]
-gl = ["gfx-backend-gl"]
 dx12 = ["gfx-backend-dx12"]
 vulkan = ["gfx-backend-vulkan"]
 unstable = []
@@ -38,11 +37,6 @@ rev= "580a58e1c1a83663b6f450ca689e5c40435275c4"
 optional = true
 
 [target.'cfg(target_os = "macos")'.dependencies.gfx-backend-metal]
-git = "https://github.com/gfx-rs/gfx.git"
-rev= "580a58e1c1a83663b6f450ca689e5c40435275c4"
-optional = true
-
-[target.'cfg(target_os = "linux")'.dependencies.gfx-backend-gl]
 git = "https://github.com/gfx-rs/gfx.git"
 rev= "580a58e1c1a83663b6f450ca689e5c40435275c4"
 optional = true

@@ -1,21 +1,16 @@
 #![cfg_attr(
-    not(any(feature = "vulkan", feature = "dx12", feature = "metal", feature = "gl")),
+    not(any(feature = "vulkan", feature = "dx12", feature = "metal")),
     allow(dead_code, unused_extern_crates, unused_imports)
 )]
 
 extern crate env_logger;
 #[cfg(feature = "dx12")]
 extern crate gfx_backend_dx12 as back;
-#[cfg(feature = "gl")]
-extern crate gfx_backend_gl as back;
 #[cfg(feature = "metal")]
 extern crate gfx_backend_metal as back;
 #[cfg(feature = "vulkan")]
 extern crate gfx_backend_vulkan as back;
 extern crate gfx_hal as hal;
-
-#[cfg(feature = "gl")]
-use back::glutin::GlContext;
 
 extern crate glsl_to_spirv;
 extern crate image;
@@ -62,7 +57,7 @@ const COLOR_RANGE: i::SubresourceRange = i::SubresourceRange {
     layers: 0..1,
 };
 
-#[cfg(any(feature = "vulkan", feature = "dx12", feature = "metal", feature = "gl"))]
+#[cfg(any(feature = "vulkan", feature = "dx12", feature = "metal"))]
 fn main() {
     env_logger::init();
 
@@ -74,27 +69,13 @@ fn main() {
             height: DIMS.height as _,
         }, 1.0))
          .with_title("GFX Experiments".to_string());
-    // instantiate backend
-    #[cfg(not(feature = "gl"))]
+
     let (window, _instance, mut adapters, mut surface) = {
         let window = wb.build(&events_loop).unwrap();
         let instance = back::Instance::create("gfx-rs quad", 1);
         let surface = instance.create_surface(&window);
         let adapters = instance.enumerate_adapters();
         (window, instance, adapters, surface)
-    };
-    #[cfg(feature = "gl")]
-    let (mut adapters, mut surface) = {
-        let window = {
-            let builder =
-                back::config_context(back::glutin::ContextBuilder::new(), ColorFormat::SELF, None)
-                    .with_vsync(true);
-            back::glutin::GlWindow::new(wb, builder, &events_loop).unwrap()
-        };
-
-        let surface = back::Surface::from_window(window);
-        let adapters = surface.enumerate_adapters();
-        (adapters, surface)
     };
 
     for adapter in &adapters {
@@ -351,10 +332,7 @@ fn main() {
     let mut extent;
 
     {
-        #[cfg(not(feature = "gl"))]
         let window = &window;
-        #[cfg(feature = "gl")]
-        let window = &0;
         let (
             new_swap_chain,
             new_render_pass,
@@ -409,8 +387,6 @@ fn main() {
                     }
                     | winit::WindowEvent::CloseRequested => running = false,
                     winit::WindowEvent::Resized(dims) => {
-                        #[cfg(feature = "gl")]
-                        surface.get_window().resize(dims.to_physical(surface.get_window().get_hidpi_factor()));
                         recreate_swapchain = true;
                     }
                     _ => (),
@@ -435,10 +411,7 @@ fn main() {
             device.destroy_render_pass(render_pass);
             device.destroy_swapchain(swap_chain);
 
-            #[cfg(not(feature = "gl"))]
             let window = &window;
-            #[cfg(feature = "gl")]
-            let window = &0;
             let (
                 new_swap_chain,
                 new_render_pass,
@@ -546,17 +519,15 @@ fn main() {
     device.destroy_swapchain(swap_chain);
 }
 
-#[cfg(not(any(feature = "vulkan", feature = "dx12", feature = "metal", feature = "gl")))]
+#[cfg(not(any(feature = "vulkan", feature = "dx12", feature = "metal")))]
 fn main() {
     println!("You need to enable the native API feature (vulkan/metal) in order to test the LL");
 }
 
 #[cfg(any(feature = "vulkan", feature = "dx12", feature = "metal"))]
 type WindowType = winit::Window;
-#[cfg(feature = "gl")]
-type WindowType = u32;
 
-#[cfg(any(feature = "vulkan", feature = "dx12", feature = "metal", feature = "gl"))]
+#[cfg(any(feature = "vulkan", feature = "dx12", feature = "metal"))]
 fn swapchain_stuff(
     surface: &mut <back::Backend as hal::Backend>::Surface,
     device: &mut back::Device,
@@ -589,11 +560,6 @@ fn swapchain_stuff(
     let extent = match caps.current_extent {
         Some(e) => e,
         None => {
-            #[cfg(feature = "gl")]
-            let _window = window;
-            #[cfg(feature = "gl")]
-            let window = surface.get_window();
-
             let window_size = window.get_inner_size().unwrap().to_physical(window.get_hidpi_factor());
             let mut extent = hal::window::Extent2D { width: window_size.width as _, height: window_size.height as _};
 
