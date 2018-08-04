@@ -524,10 +524,8 @@ fn main() {
     println!("You need to enable the native API feature (vulkan/metal) in order to test the LL");
 }
 
-#[cfg(any(feature = "vulkan", feature = "dx12", feature = "metal"))]
 type WindowType = winit::Window;
 
-#[cfg(any(feature = "vulkan", feature = "dx12", feature = "metal"))]
 fn swapchain_stuff(
     surface: &mut <back::Backend as hal::Backend>::Surface,
     device: &mut back::Device,
