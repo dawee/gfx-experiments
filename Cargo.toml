@@ -1,0 +1,34 @@
+[package]
+name = "gfx-experiments"
+version = "0.1.0"
+publish = false
+
+[features]
+default = []
+metal = ["gfx-backend-metal"]
+gl = ["gfx-backend-gl"]
+dx12 = ["gfx-backend-dx12"]
+vulkan = ["gfx-backend-vulkan"]
+unstable = []
+
+[[bin]]
+name = "gfx-experiments"
+path = "src/main.rs"
+
+[dependencies]
+env_logger = "0.5"
+image = "0.18"
+log = "0.4"
+winit = "0.16"
+glsl-to-spirv = "0.1.4"
+gfx-hal = {git = "https://github.com/gfx-rs/gfx.git", rev= "580a58e1c1a83663b6f450ca689e5c40435275c4"}
+gfx-backend-vulkan = {git = "https://github.com/gfx-rs/gfx.git", rev= "580a58e1c1a83663b6f450ca689e5c40435275c4", optional = true, features = ["glsl-to-spirv"]}
+
+[target.'cfg(windows)'.dependencies]
+gfx-backend-dx12 = {git = "https://github.com/gfx-rs/gfx.git", rev= "580a58e1c1a83663b6f450ca689e5c40435275c4", optional = true}
+
+[target.'cfg(target_os = "macos")'.dependencies]
+gfx-backend-metal = {git = "https://github.com/gfx-rs/gfx.git", rev= "580a58e1c1a83663b6f450ca689e5c40435275c4", optional = true}
+
+[target.'cfg(target_os = "linux")'.dependencies]
+gfx-backend-gl = {git = "https://github.com/gfx-rs/gfx.git", rev= "580a58e1c1a83663b6f450ca689e5c40435275c4", optional = true}
